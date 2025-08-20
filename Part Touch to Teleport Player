@@ -1,0 +1,10 @@
+local teleportPart = workspace:WaitForChild("TeleportPart")
+local destination = workspace:WaitForChild("DestinationPart")
+
+teleportPart.Touched:Connect(function(hit)
+    local character = hit.Parent
+    local humanoidRoot = character:FindFirstChild("HumanoidRootPart")
+    if humanoidRoot then
+        humanoidRoot.CFrame = destination.CFrame + Vector3.new(0, 3, 0)
+    end
+end)

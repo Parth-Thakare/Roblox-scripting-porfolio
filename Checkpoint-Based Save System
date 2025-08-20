@@ -1,0 +1,32 @@
+//This is the Script in ServerScriptService
+local DataStoreService = game:GetService("DataStoreService")
+local checkpointStore = DataStoreService:GetDataStore("CheckpointSaves")
+
+game.Players.PlayerAdded:Connect(function(player)
+	local userId = tostring(player.UserId)
+	local savedCheckpoint = checkpointStore:GetAsync(userId)
+
+	player.CharacterAdded:Connect(function(character)
+		wait(1)
+		if savedCheckpoint then
+			local checkpoint = workspace:FindFirstChild(savedCheckpoint)
+			if checkpoint and checkpoint:IsA("Part") then
+				character:MoveTo(checkpoint.Position + Vector3.new(0, 3, 0))
+			end
+		end
+	end)
+end)
+
+for _, checkpoint in pairs(workspace.Checkpoints:GetChildren()) do
+	if checkpoint:IsA("Part") then
+		checkpoint.Touched:Connect(function(hit)
+			local player = game.Players:GetPlayerFromCharacter(hit.Parent)
+			if player then
+				local userId = tostring(player.UserId)
+				checkpointStore:SetAsync(userId, checkpoint.Name)
+				print("Checkpoint saved:", checkpoint.Name)
+			end
+		end)
+	end
+end
+

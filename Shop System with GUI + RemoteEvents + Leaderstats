@@ -1,0 +1,50 @@
+//Shop System Script in GUI
+local remote = game.ReplicatedStorage:WaitForChild("BuyItemEvent")
+local button = script.Parent
+
+button.MouseButton1Click:Connect(function()
+	remote:FireServer("SpeedCoil") -- item name
+end)
+
+//Shop Handler script in serverscript service
+
+local remote = Instance.new("RemoteEvent")
+remote.Name = "BuyItemEvent"
+remote.Parent = game.ReplicatedStorage
+
+local itemPrices = {
+	["SpeedCoil"] = 100,
+	["GravityCoil"] = 200
+}
+
+remote.OnServerEvent:Connect(function(player, itemName)
+	local leaderstats = player:FindFirstChild("leaderstats")
+	if not leaderstats then return end
+
+	local coins = leaderstats:FindFirstChild("Coins")
+	if not coins then return end
+
+	local price = itemPrices[itemName]
+	if price and coins.Value >= price then
+		coins.Value -= price
+
+		local tool = game.ServerStorage:FindFirstChild(itemName)
+		if tool then
+			local clone = tool:Clone()
+			clone.Parent = player.Backpack
+		end
+	end
+end)
+
+--LeaderStatsScript in Script service
+
+game.Players.PlayerAdded:Connect(function(player)
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	stats.Parent = player
+
+	local coins = Instance.new("IntValue")
+	coins.Name = "Coins"
+	coins.Value = 150
+	coins.Parent = stats
+end)

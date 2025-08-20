@@ -1,0 +1,64 @@
+//This the ModuleScript in ReplicatedStorage
+local EnemyAI = {}
+
+function EnemyAI.Patrol(enemy, points)
+	local humanoid = enemy:FindFirstChild("Humanoid")
+	local current = 1
+
+	while enemy and enemy.Parent do
+		local targetPoint = points[current]
+		if humanoid and targetPoint then
+			humanoid:MoveTo(targetPoint.Position)
+			humanoid.MoveToFinished:Wait()
+			current = current % #points + 1
+			wait(1)
+		end
+	end
+end
+
+function EnemyAI.Chase(enemy, player)
+	local humanoid = enemy:FindFirstChild("Humanoid")
+	while enemy and player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") do
+		local playerHRP = player.Character.HumanoidRootPart
+		humanoid:MoveTo(playerHRP.Position)
+		wait(0.1)
+	end
+end
+
+function EnemyAI.DetectPlayers(enemy, radius)
+	local players = game.Players:GetPlayers()
+	local closest = nil
+	local minDist = radius
+
+	for _, player in pairs(players) do
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local dist = (player.Character.HumanoidRootPart.Position - enemy.Position).Magnitude
+			if dist < minDist then
+				minDist = dist
+				closest = player
+			end
+            
+//This is the script in serverscriptservice
+
+local EnemyAI = require(game.ReplicatedStorage:WaitForChild("EnemyAI"))
+local enemy = workspace:WaitForChild("Enemy")
+local patrolPoints = workspace:WaitForChild("PatrolPoints"):GetChildren()
+
+local chasing = false
+
+while true do
+	wait(1)
+
+	local player = EnemyAI.DetectPlayers(enemy, 30)
+	if player and not chasing then
+		chasing = true
+		spawn(function()
+			EnemyAI.Chase(enemy, player)
+			chasing = false
+		end)
+	else
+		if not chasing then
+			EnemyAI.Patrol(enemy, patrolPoints)
+		end
+	end
+end

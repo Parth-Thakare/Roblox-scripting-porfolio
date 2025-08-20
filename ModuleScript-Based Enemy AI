@@ -1,0 +1,20 @@
+local EnemyAI = {}
+
+function EnemyAI.MoveToPlayer(enemy, player)
+    local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if humanoid and hrp then
+        humanoid:MoveTo(hrp.Position)
+    end
+end
+
+return EnemyAI
+local AI = require(game.ReplicatedStorage:WaitForChild("EnemyAI"))
+local enemy = workspace:WaitForChild("EnemyNPC")
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(2)
+        AI.MoveToPlayer(enemy, player)
+    end)
+end)
