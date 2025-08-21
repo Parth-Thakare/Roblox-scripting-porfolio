@@ -1,0 +1,54 @@
+-- Place this Script inside the Tool
+local tool = script.Parent
+local handle = tool:WaitForChild("Handle")
+
+local DAMAGE = 25
+local COOLDOWN = 1 -- seconds
+local debounce = false
+local hitPlayers = {}
+
+-- Reset hitPlayers table after short time
+local function resetHits()
+	hitPlayers = {}
+end
+
+-- Attack function
+local function onTouched(hit)
+	if debounce then return end
+
+	local character = hit.Parent
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
+
+	local player = game.Players:GetPlayerFromCharacter(tool.Parent)
+	if not player then return end
+
+	local targetPlayer = game.Players:GetPlayerFromCharacter(character)
+	if targetPlayer == player then return end -- Don't hit self
+	if hitPlayers[targetPlayer] then return end -- Already hit in this swing
+
+	-- Damage
+	humanoid:TakeDamage(DAMAGE)
+	hitPlayers[targetPlayer] = true
+end
+
+-- Equip handler
+tool.Equipped:Connect(function()
+	-- Optional: connect animation here
+end)
+
+-- Attack logic
+tool.Activated:Connect(function()
+	if debounce then return end
+	debounce = true
+
+	resetHits()
+
+	-- Optional: play slash animation here
+
+	handle.Touched:Connect(onTouched)
+
+	wait(COOLDOWN)
+
+	debounce = false
+end)
